@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block page_title %}Security Alerts{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <form class="filter-bar" method="get">
+        <input name="q" placeholder="Search alerts" value="{{ filters.get('q', '') }}">
+        <select name="severity">
+            <option value="">All severities</option>
+            {% for level in ["LOW", "MEDIUM", "HIGH", "CRITICAL"] %}
+            <option value="{{ level }}" {% if filters.get('severity') == level %}selected{% endif %}>{{ level }}</option>
+            {% endfor %}
+        </select>
+        <input name="username" placeholder="Username" value="{{ filters.get('username', '') }}">
+        <input name="source" placeholder="Source" value="{{ filters.get('source', '') }}">
+        <button type="submit">Apply</button>
+        <a class="button secondary" href="/export/alerts/csv?{{ request.query_string.decode() }}">CSV</a>
+        <a class="button secondary" href="/export/alerts/pdf?{{ request.query_string.decode() }}">PDF</a>
+    </form>
+
+    <div class="alert-list">
+        {% for alert in alerts %}
+        {% set rec = recommendations[alert.id] %}
+        <a class="alert-card link-card" href="/alerts/{{ alert.id }}">
+            <div class="alert-card-head">
+                <span class="badge {{ alert.severity|lower }}">{{ alert.severity }}</span>
+                <b>{{ alert.threat }}</b>
+                <small>{{ alert.username }} &middot; {{ alert.hostname or alert.computer or 'Unknown Host' }} &middot; {{ alert.ip_address or 'Unknown IP' }}</small>
+            </div>
+            <small>{{ alert.source }} &middot; {{ alert.last_seen or alert.timestamp }} &middot; Count {{ alert.count }} &middot; Email {{ "Sent" if alert.email_sent else "Pending" }}</small>
+            <div class="detail-preview">
+                <span>{{ rec.description }}</span>
+                <span>MITRE: {{ rec.mitre }}</span>
+            </div>
+        </a>
+        {% else %}
+        <p class="empty">No alerts match the current filters.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

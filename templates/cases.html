@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block page_title %}Cases{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Create Case</h2>
+        <span>Investigators can track evidence, notes, and related alerts here.</span>
+    </div>
+    {% if can_manage %}
+    <form class="filter-bar" method="post">
+        <input name="title" placeholder="Case title" value="Investigation Case">
+        <input name="owner" placeholder="Owner / analyst">
+        <select name="status">
+            {% for status in ["Open", "Investigating", "Resolved", "Closed"] %}
+            <option value="{{ status }}">{{ status }}</option>
+            {% endfor %}
+        </select>
+        <input name="related_alert_ids" placeholder="Related alert ids, comma separated">
+        <textarea name="evidence" rows="3" placeholder="Evidence" style="width:100%;min-height:84px;"></textarea>
+        <textarea name="notes" rows="3" placeholder="Notes" style="width:100%;min-height:84px;"></textarea>
+        <textarea name="timeline" rows="3" placeholder="Timeline" style="width:100%;min-height:84px;"></textarea>
+        <button type="submit">Create Case</button>
+    </form>
+    {% else %}
+    <p class="empty">Viewer access is read-only.</p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Investigation Cases</h2>
+        <span>{{ cases|length }} total</span>
+    </div>
+    <div class="alert-list">
+        {% for case in cases %}
+        <details class="alert-card">
+            <summary>
+                <span class="badge {{ case.status|lower }}">{{ case.status }}</span>
+                <b>#{{ case.id }} {{ case.title }}</b>
+                <span>Owner: {{ case.owner or "Unassigned" }}</span>
+                <small>Created {{ case.created_at }} · Updated {{ case.updated_at }} · Related alerts {{ case.related_alert_ids }}</small>
+            </summary>
+            <div class="alert-detail">
+                <p><b>Evidence:</b> {{ case.evidence or "None" }}</p>
+                <p><b>Notes:</b> {{ case.notes or "None" }}</p>
+                <p><b>Timeline:</b> {{ case.timeline or "None" }}</p>
+                {% if can_manage %}
+                <form class="filter-bar" method="post" action="/cases/{{ case.id }}/update">
+                    <select name="status">
+                        {% for status in ["Open", "Investigating", "Resolved", "Closed"] %}
+                        <option value="{{ status }}" {% if case.status == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                    <input name="owner" placeholder="Owner" value="{{ case.owner }}">
+                    <input name="related_alert_ids" placeholder="Related alert ids" value="{{ case.related_alert_ids }}">
+                    <textarea name="evidence" rows="2" placeholder="Evidence" style="width:100%;min-height:64px;">{{ case.evidence }}</textarea>
+                    <textarea name="notes" rows="2" placeholder="Notes" style="width:100%;min-height:64px;">{{ case.notes }}</textarea>
+                    <textarea name="timeline" rows="2" placeholder="Timeline" style="width:100%;min-height:64px;">{{ case.timeline }}</textarea>
+                    <button type="submit">Update</button>
+                </form>
+                {% endif %}
+            </div>
+        </details>
+        {% else %}
+        <p class="empty">No cases yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Recent Alerts</h2>
+        <span>Reference these when building a case.</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>ID</th><th>Threat</th><th>Severity</th><th>User</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+            {% for alert in alerts %}
+            <tr>
+                <td>{{ alert.id }}</td>
+                <td>{{ alert.threat }}</td>
+                <td><span class="badge {{ alert.severity|lower }}">{{ alert.severity }}</span></td>
+                <td>{{ alert.username }}</td>
+                <td>{{ alert.source }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No alerts available.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

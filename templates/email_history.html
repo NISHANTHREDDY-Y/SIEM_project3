@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block page_title %}Email History{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Total Emails</span><strong>{{ totals.emails }}</strong></article>
+    <article class="metric-card"><span>Sent</span><strong>{{ history|selectattr("status", "equalto", "SENT")|list|length }}</strong></article>
+    <article class="metric-card"><span>Failed</span><strong>{{ history|selectattr("status", "equalto", "FAILED")|list|length }}</strong></article>
+    <article class="metric-card"><span>Skipped</span><strong>{{ history|selectattr("status", "equalto", "SKIPPED")|list|length }}</strong></article>
+</section>
+
+<section class="panel">
+    <form class="filter-bar" method="get">
+        <input name="receiver" placeholder="Receiver" value="{{ filters.get('receiver', '') }}">
+        <select name="severity">
+            <option value="">All severities</option>
+            {% for level in ["MEDIUM", "HIGH", "CRITICAL"] %}
+            <option value="{{ level }}" {% if filters.get('severity') == level %}selected{% endif %}>{{ level }}</option>
+            {% endfor %}
+        </select>
+        <input name="threat" placeholder="Threat" value="{{ filters.get('threat', '') }}">
+        <select name="status">
+            <option value="">All statuses</option>
+            {% for status in ["SENT", "FAILED", "SKIPPED"] %}
+            <option value="{{ status }}" {% if filters.get('status') == status %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Apply</button>
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>Time</th><th>Receiver</th><th>Severity</th><th>Threat</th><th>Status</th><th>Subject</th><th>Error</th></tr>
+            </thead>
+            <tbody>
+            {% for item in history %}
+            <tr>
+                <td>{{ item.timestamp }}</td>
+                <td>{{ item.receiver }}</td>
+                <td><span class="badge {{ item.severity|lower }}">{{ item.severity }}</span></td>
+                <td>{{ item.threat }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.subject }}</td>
+                <td>{{ item.error or "-" }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7">No email history yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

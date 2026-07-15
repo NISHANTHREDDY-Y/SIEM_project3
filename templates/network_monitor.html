@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block page_title %}Network Monitoring{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Connections</span><strong>{{ monitored }}</strong></article>
+    <article class="metric-card low"><span>Listening</span><strong>{{ summary.listening }}</strong></article>
+    <article class="metric-card medium"><span>Established</span><strong>{{ summary.established }}</strong></article>
+    <article class="metric-card danger"><span>Suspicious</span><strong>{{ summary.suspicious }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Live Connections</h2>
+        <span>Built from the local Windows netstat table and process map</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Protocol</th>
+                    <th>Local Address</th>
+                    <th>Remote Address</th>
+                    <th>State</th>
+                    <th>PID</th>
+                    <th>Process</th>
+                    <th>Risk</th>
+                    <th>Reason</th>
+                    <th>Last Seen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                <tr>
+                    <td>{{ item.protocol }}</td>
+                    <td>{{ item.local_address }}:{{ item.local_port }}</td>
+                    <td>{{ item.remote_address }}:{{ item.remote_port }}</td>
+                    <td><span class="badge {% if item.state == 'ESTABLISHED' %}low{% elif item.state == 'LISTENING' %}info{% else %}medium{% endif %}">{{ item.state }}</span></td>
+                    <td>{{ item.pid }}</td>
+                    <td>{{ item.process_name }}</td>
+                    <td><span class="badge {% if item.risk_level == 'CRITICAL' %}critical{% elif item.risk_level == 'HIGH' %}high{% elif item.risk_level == 'MEDIUM' %}medium{% else %}low{% endif %}">{{ item.risk_level }}</span></td>
+                    <td>{{ item.reason }}</td>
+                    <td>{{ item.last_seen }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9">No connections available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

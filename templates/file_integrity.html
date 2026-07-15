@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block page_title %}File Integrity Monitoring{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Monitored Files</span><strong>{{ monitored }}</strong></article>
+    <article class="metric-card low"><span>Clean</span><strong>{{ results | selectattr('status', 'equalto', 'Clean') | list | length }}</strong></article>
+    <article class="metric-card medium"><span>Modified</span><strong>{{ results | selectattr('status', 'equalto', 'Modified') | list | length }}</strong></article>
+    <article class="metric-card danger"><span>Missing</span><strong>{{ results | selectattr('status', 'equalto', 'Missing') | list | length }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Monitored Targets</h2>
+        <span>Background polling watches the core SIEM files for unauthorized change</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Path</th>
+                    <th>Status</th>
+                    <th>Size</th>
+                    <th>Last Modified</th>
+                    <th>Last Seen</th>
+                    <th>Hash</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                <tr>
+                    <td><b>{{ item.path }}</b></td>
+                    <td>
+                        <span class="badge {% if item.status == 'Modified' %}high{% elif item.status == 'Missing' or item.status == 'Error' %}critical{% elif item.status == 'Clean' %}low{% else %}info{% endif %}">
+                            {{ item.status }}
+                        </span>
+                    </td>
+                    <td>{{ item.size if item.size is defined else "-" }}</td>
+                    <td>{{ item.last_modified if item.last_modified is defined else "-" }}</td>
+                    <td>{{ item.last_seen if item.last_seen is defined else "-" }}</td>
+                    <td>{{ item.hash if item.hash is defined else "-" }}</td>
+                    <td>{{ item.error if item.error is defined else "Baseline captured locally" }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">No monitored files are configured.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

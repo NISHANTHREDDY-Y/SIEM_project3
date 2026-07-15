@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block page_title %}Security Analytics{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Total Logs</span><strong>{{ totals.logs }}</strong></article>
+    <article class="metric-card"><span>Total Alerts</span><strong>{{ totals.alerts }}</strong></article>
+    <article class="metric-card"><span>Users</span><strong>{{ totals.users }}</strong></article>
+    <article class="metric-card"><span>Sources</span><strong>{{ totals.sources }}</strong></article>
+</section>
+
+<section class="dashboard-grid">
+    <div class="panel wide"><div class="panel-heading"><h2>Threat Timeline</h2></div><canvas id="analyticsThreatTrend"></canvas></div>
+    <div class="panel"><div class="panel-heading"><h2>Severity Distribution</h2></div><canvas id="analyticsSeverity"></canvas></div>
+    <div class="panel"><div class="panel-heading"><h2>User Activity</h2></div><canvas id="analyticsUsers"></canvas></div>
+    <div class="panel"><div class="panel-heading"><h2>Hourly Events</h2></div><canvas id="analyticsHourly"></canvas></div>
+    <div class="panel"><div class="panel-heading"><h2>Event Types</h2></div><canvas id="analyticsEvents"></canvas></div>
+    <div class="panel"><div class="panel-heading"><h2>Top Sources</h2></div><canvas id="analyticsSources"></canvas></div>
+</section>
+
+<script>
+window.analyticsCharts = {
+    threatTrend: {{ threat_trend | tojson }},
+    severity: {{ severity_distribution | tojson }},
+    users: {{ user_activity | tojson }},
+    hourly: {{ hourly_events | tojson }},
+    events: {{ event_types | tojson }},
+    sources: {{ top_sources | tojson }}
+};
+</script>
+
+{% endblock %}

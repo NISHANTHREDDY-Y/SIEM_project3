@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block page_title %}Device Inventory{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Total Devices</span><strong>{{ totals.total }}</strong></article>
+    <article class="metric-card"><span>Online</span><strong>{{ totals.online }}</strong></article>
+    <article class="metric-card"><span>Idle</span><strong>{{ totals.idle }}</strong></article>
+    <article class="metric-card"><span>Offline</span><strong>{{ totals.offline }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Observed Endpoints</h2>
+        <span>Derived from collected Windows event sources</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hostname</th>
+                    <th>Operating System</th>
+                    <th>IP Address</th>
+                    <th>Agent</th>
+                    <th>Status</th>
+                    <th>Logs</th>
+                    <th>Alerts</th>
+                    <th>Risk Score</th>
+                    <th>Last Seen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td>{{ device.hostname }}</td>
+                    <td>{{ device.operating_system }}</td>
+                    <td>{{ device.ip_address }}</td>
+                    <td>{{ device.agent_version or "-" }}</td>
+                    <td><span class="badge {% if device.status == 'Online' %}low{% elif device.status == 'Idle' %}medium{% else %}info{% endif %}">{{ device.status }}</span></td>
+                    <td>{{ device.log_count }}</td>
+                    <td>{{ device.alert_count }}</td>
+                    <td>{{ device.risk_score }}</td>
+                    <td>{{ device.last_seen }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9">No devices have been observed yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

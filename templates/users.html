@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block page_title %}User Risk Center{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <div class="panel-heading"><h2>Users</h2><span>{{ users|length }} observed accounts</span></div>
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>Username</th><th>Risk Score</th><th>Last Activity</th><th>Total Events</th><th>Threat Count</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+            <tr>
+                <td><b>{{ user.username }}</b></td>
+                <td>{{ user.risk_score }}</td>
+                <td>{{ user.last_activity }}</td>
+                <td>{{ user.event_count }}</td>
+                <td>{{ user.threat_count }}</td>
+                <td>
+                    {% if user.risk_score >= 80 %}
+                    <span class="badge critical">Critical</span>
+                    {% elif user.risk_score >= 40 %}
+                    <span class="badge high">Elevated</span>
+                    {% elif user.threat_count %}
+                    <span class="badge medium">Watch</span>
+                    {% else %}
+                    <span class="badge info">Normal</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No meaningful users found yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading"><h2>Application Access</h2><span>Login accounts and roles</span></div>
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>Username</th><th>Role</th><th>Display Name</th><th>Active</th><th>Last Login</th></tr>
+            </thead>
+            <tbody>
+            {% for account in app_users %}
+            <tr>
+                <td><b>{{ account.username }}</b></td>
+                <td><span class="badge info">{{ account.role }}</span></td>
+                <td>{{ account.display_name or "-" }}</td>
+                <td>{{ "Yes" if account.active else "No" }}</td>
+                <td>{{ account.last_login or "Never" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

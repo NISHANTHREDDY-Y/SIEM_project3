@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIEM SOC Console</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app-shell" id="appShell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <img class="brand-logo" src="{{ url_for('static', filename='brand/drdo-logo.png') }}" alt="DRDO logo">
+            <div class="brand-copy">
+                <span>SIEM SOC</span>
+                <small>Security Operations Center</small>
+            </div>
+        </div>
+        <button class="icon-button sidebar-toggle" type="button" onclick="toggleSidebar()" title="Toggle sidebar">&#9776;</button>
+        <nav class="nav-menu">
+            <a href="/" class="{% if request.path == '/' %}active{% endif %}"><span>DB</span><b>Dashboard</b></a>
+            <a href="/logs" class="{% if request.path == '/logs' %}active{% endif %}"><span>LG</span><b>Logs</b></a>
+            <a href="/alerts" class="{% if request.path == '/alerts' %}active{% endif %}"><span>AL</span><b>Alerts</b></a>
+            <a href="/email-history" class="{% if request.path == '/email-history' %}active{% endif %}"><span>EM</span><b>Email History</b></a>
+            <a href="/reports" class="{% if request.path == '/reports' %}active{% endif %}"><span>RP</span><b>Reports</b></a>
+            <a href="/incidents" class="{% if request.path == '/incidents' %}active{% endif %}"><span>IN</span><b>Incidents</b></a>
+            <a href="/cases" class="{% if request.path == '/cases' %}active{% endif %}"><span>CS</span><b>Cases</b></a>
+            <a href="/devices" class="{% if request.path == '/devices' %}active{% endif %}"><span>DV</span><b>Devices</b></a>
+            <a href="/agent-status" class="{% if request.path == '/agent-status' %}active{% endif %}"><span>AS</span><b>Agent Status</b></a>
+            <a href="/settings" class="{% if request.path == '/settings' %}active{% endif %}"><span>ST</span><b>Settings</b></a>
+            <a href="/file-integrity" class="{% if request.path == '/file-integrity' %}active{% endif %}"><span>FI</span><b>File Integrity</b></a>
+            <a href="/registry-monitor" class="{% if request.path == '/registry-monitor' %}active{% endif %}"><span>RG</span><b>Registry</b></a>
+            <a href="/process-monitor" class="{% if request.path == '/process-monitor' %}active{% endif %}"><span>PR</span><b>Processes</b></a>
+            <a href="/usb-monitor" class="{% if request.path == '/usb-monitor' %}active{% endif %}"><span>UB</span><b>USB</b></a>
+            <a href="/network-monitor" class="{% if request.path == '/network-monitor' %}active{% endif %}"><span>NW</span><b>Network</b></a>
+            <a href="/sysmon" class="{% if request.path == '/sysmon' %}active{% endif %}"><span>SM</span><b>Sysmon</b></a>
+            <a href="/performance" class="{% if request.path == '/performance' %}active{% endif %}"><span>PF</span><b>Performance</b></a>
+            <a href="/ioc-scanner" class="{% if request.path == '/ioc-scanner' %}active{% endif %}"><span>IO</span><b>IOC Scanner</b></a>
+            <a href="/analytics" class="{% if request.path == '/analytics' %}active{% endif %}"><span>AN</span><b>Analytics</b></a>
+            <a href="/users" class="{% if request.path == '/users' %}active{% endif %}"><span>US</span><b>Users</b></a>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Security Operations Center</p>
+                <h1>{% block page_title %}SIEM Console{% endblock %}</h1>
+            </div>
+            <div class="topbar-actions">
+                <form class="global-search" action="/search" method="get">
+                    <input type="search" name="q" placeholder="Search logs, alerts, users" value="{{ request.args.get('q', '') }}">
+                    <button type="submit">Search</button>
+                </form>
+                {% if current_user %}
+                <div class="user-chip">
+                    <div>
+                        <strong>{{ current_user.display_name or current_user.username }}</strong>
+                        <small>{{ current_user.role }}</small>
+                    </div>
+                    <form action="/logout" method="post">
+                        <button type="submit">Logout</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-stack">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

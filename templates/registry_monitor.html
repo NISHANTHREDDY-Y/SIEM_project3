@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block page_title %}Registry Monitoring{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Monitored Keys</span><strong>{{ monitored }}</strong></article>
+    <article class="metric-card low"><span>Clean</span><strong>{{ summary.clean }}</strong></article>
+    <article class="metric-card medium"><span>Baseline</span><strong>{{ summary.baseline }}</strong></article>
+    <article class="metric-card danger"><span>Modified / Missing</span><strong>{{ summary.problem }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Registry Targets</h2>
+        <span>Reads important Windows keys and tracks value changes over time</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Registry Key</th>
+                    <th>Status</th>
+                    <th>Value Count</th>
+                    <th>Last Seen</th>
+                    <th>Snapshot</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                <tr>
+                    <td><b>{{ item.path }}</b></td>
+                    <td>
+                        <span class="badge {% if item.status == 'Modified' %}high{% elif item.status == 'Missing' or item.status == 'Error' %}critical{% elif item.status == 'Clean' %}low{% else %}info{% endif %}">
+                            {{ item.status }}
+                        </span>
+                    </td>
+                    <td>{{ item.value_count }}</td>
+                    <td>{{ item.last_seen }}</td>
+                    <td><pre style="max-width: 560px;">{{ item.snapshot or "-" }}</pre></td>
+                    <td>{{ item.error or "None" }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No registry targets are configured.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

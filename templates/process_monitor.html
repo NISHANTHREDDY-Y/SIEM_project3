@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block page_title %}Process Monitoring{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Total Processes</span><strong>{{ monitored }}</strong></article>
+    <article class="metric-card low"><span>Running</span><strong>{{ summary.running }}</strong></article>
+    <article class="metric-card medium"><span>Baseline</span><strong>{{ summary.baseline }}</strong></article>
+    <article class="metric-card danger"><span>Suspicious</span><strong>{{ summary.suspicious }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Live Process View</h2>
+        <span>Watchlist-based process discovery using the local Windows task list</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Process</th>
+                    <th>PID</th>
+                    <th>Status</th>
+                    <th>Threat</th>
+                    <th>User</th>
+                    <th>Last Seen</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                <tr>
+                    <td><b>{{ item.name }}</b></td>
+                    <td>{{ item.pid }}</td>
+                    <td>
+                        <span class="badge {% if item.status == 'Suspicious' %}critical{% elif item.status == 'Running' %}low{% else %}info{% endif %}">
+                            {{ item.status }}
+                        </span>
+                    </td>
+                    <td>{{ item.threat }}</td>
+                    <td>{{ item.user or "-" }}</td>
+                    <td>{{ item.last_seen }}</td>
+                    <td>{{ item.reason }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">No processes available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

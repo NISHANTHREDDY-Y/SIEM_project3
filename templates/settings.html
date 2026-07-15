@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block page_title %}Configuration{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Agent Management</h2>
+        <span>Server-managed settings for centralized collection</span>
+    </div>
+
+    <form class="auth-form" method="post" style="max-width:760px;">
+        <label>
+            Agent Interval (seconds)
+            <input name="agent_interval" type="number" min="5" max="3600" value="{{ settings.agent_interval }}">
+        </label>
+        <label>
+            Heartbeat Interval (seconds)
+            <input name="heartbeat_interval" type="number" min="5" max="3600" value="{{ settings.heartbeat_interval }}">
+        </label>
+        <label>
+            Server Address
+            <input name="server_address" type="text" value="{{ settings.server_address }}">
+        </label>
+        <label>
+            Enabled Sources
+            <textarea name="enabled_sources" rows="4" placeholder="Security,System,Application">{{ settings.enabled_sources | join(',') }}</textarea>
+        </label>
+        <button type="submit">Save Settings</button>
+    </form>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Stored Key</span><strong style="font-size:18px;">{{ raw_settings.agent_interval or 'Default' }}</strong></article>
+    <article class="metric-card"><span>Stored Heartbeat</span><strong style="font-size:18px;">{{ raw_settings.heartbeat_interval or 'Default' }}</strong></article>
+    <article class="metric-card"><span>Stored Server</span><strong style="font-size:18px;">{{ raw_settings.server_address or 'Default' }}</strong></article>
+    <article class="metric-card"><span>Source Count</span><strong>{{ settings.enabled_sources|length }}</strong></article>
+</section>
+
+{% endblock %}

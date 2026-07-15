@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block page_title %}Performance Monitoring{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Metrics</span><strong>{{ monitored }}</strong></article>
+    <article class="metric-card low"><span>Normal</span><strong>{{ summary.normal }}</strong></article>
+    <article class="metric-card medium"><span>High</span><strong>{{ summary.high }}</strong></article>
+    <article class="metric-card danger"><span>Critical</span><strong>{{ summary.critical }}</strong></article>
+</section>
+
+<section class="metric-grid">
+    {% for metric in results %}
+    <article class="metric-card {% if metric.status == 'Critical' %}danger{% elif metric.status == 'High' %}high{% elif metric.status == 'Normal' %}low{% else %}medium{% endif %}">
+        <span>{{ metric.metric }}</span>
+        <strong>{{ "%.1f"|format(metric.value) }}{{ metric.unit }}</strong>
+        <small class="muted-note">{{ metric.detail }}</small>
+    </article>
+    {% endfor %}
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Performance Snapshot</h2>
+        <span>Native Windows counters for CPU, memory, disk, and network</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Status</th>
+                    <th>Threshold</th>
+                    <th>Detail</th>
+                    <th>Last Seen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for metric in results %}
+                <tr>
+                    <td><b>{{ metric.metric }}</b></td>
+                    <td>{{ "%.1f"|format(metric.value) }}{{ metric.unit }}</td>
+                    <td><span class="badge {% if metric.status == 'Critical' %}critical{% elif metric.status == 'High' %}high{% elif metric.status == 'Normal' %}low{% else %}info{% endif %}">{{ metric.status }}</span></td>
+                    <td>{{ metric.threshold }}</td>
+                    <td>{{ metric.detail }}</td>
+                    <td>{{ metric.last_seen }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

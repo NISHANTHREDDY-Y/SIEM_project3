@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block page_title %}Live Threat Dashboard{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Total Logs</span><strong>{{ totals.logs }}</strong></article>
+    <article class="metric-card danger"><span>Critical Alerts</span><strong>{{ totals.critical_alerts }}</strong></article>
+    <article class="metric-card high"><span>High Alerts</span><strong>{{ totals.high_alerts }}</strong></article>
+    <article class="metric-card medium"><span>Medium Alerts</span><strong>{{ totals.medium_alerts }}</strong></article>
+    <article class="metric-card low"><span>Low Alerts</span><strong>{{ totals.low_alerts }}</strong></article>
+    <article class="metric-card"><span>Users</span><strong>{{ totals.users }}</strong></article>
+    <article class="metric-card"><span>Sources</span><strong>{{ totals.sources }}</strong></article>
+    <article class="metric-card"><span>Email Status</span><strong>{{ "On" if email_enabled else "Off" }}</strong></article>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <span>Security Score</span>
+        <strong>{{ executive.security_score }}</strong>
+    </article>
+    <article class="metric-card">
+        <span>Posture</span>
+        <strong>{{ executive.posture }}</strong>
+    </article>
+    <article class="metric-card danger">
+        <span>Recent Critical</span>
+        <strong>{{ executive.critical_alerts }}</strong>
+    </article>
+    <article class="metric-card high">
+        <span>Open Incidents</span>
+        <strong>{{ executive.open_incidents }}</strong>
+    </article>
+    <article class="metric-card medium">
+        <span>Top Threat</span>
+        <strong>{{ executive.top_threat }}</strong>
+    </article>
+    <article class="metric-card">
+        <span>Top User</span>
+        <strong>{{ executive.top_user }}</strong>
+    </article>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Collector Running</span><strong>{{ "Yes" if collector_health.running else "No" }}</strong></article>
+    <article class="metric-card"><span>Collector Status</span><strong>{{ collector_health.status }}</strong></article>
+    <article class="metric-card"><span>Last Scan</span><strong>{{ collector_health.last_scan or "Waiting" }}</strong></article>
+    <article class="metric-card"><span>Events / Min</span><strong>{{ "%.1f"|format(collector_health.events_per_minute or 0) }}</strong></article>
+    <article class="metric-card"><span>Collector Errors</span><strong>{{ collector_health.errors }}</strong></article>
+    <article class="metric-card"><span>Last Error</span><strong>{{ collector_health.last_error or "None" }}</strong></article>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Total Devices</span><strong>{{ totals.devices }}</strong></article>
+    <article class="metric-card"><span>Online Devices</span><strong>{{ totals.online_devices }}</strong></article>
+    <article class="metric-card"><span>Offline Devices</span><strong>{{ totals.offline_devices }}</strong></article>
+    <article class="metric-card"><span>Email Queue</span><strong>{{ totals.emails }}</strong></article>
+</section>
+
+<section class="toolbar">
+    <a class="button" href="/collect">Collect Now</a>
+    <form action="/send-test-email" method="post">
+        <button type="submit">Send Test Email</button>
+    </form>
+    <span>Auto refreshes every 5 seconds.</span>
+</section>
+
+{% if email_test_status %}
+<section class="panel">
+    <strong>Email test {{ "succeeded" if email_test_status == "success" else "failed" }}:</strong>
+    <span>{{ email_test_message }}</span>
+</section>
+{% endif %}
+
+<section class="dashboard-grid">
+    <div class="panel wide">
+        <div class="panel-heading"><h2>Threat Trend</h2></div>
+        <canvas id="threatTrendChart"></canvas>
+    </div>
+    <div class="panel wide">
+        <div class="panel-heading"><h2>30-Day Alert Trend</h2></div>
+        <canvas id="monthlyThreatTrendChart"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-heading"><h2>Severity</h2></div>
+        <canvas id="severityPieChart"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-heading"><h2>Top Users</h2></div>
+        <canvas id="topUsersChart"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-heading"><h2>Top Sources</h2></div>
+        <canvas id="topSourcesChart"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-heading"><h2>Event Types</h2></div>
+        <canvas id="eventTypesChart"></canvas>
+    </div>
+    <div class="panel">
+        <div class="panel-heading"><h2>Login Success vs Failure</h2></div>
+        <canvas id="loginChart"></canvas>
+    </div>
+</section>
+
+<section class="two-column">
+    <div class="panel">
+        <div class="panel-heading"><h2>Recent Alerts</h2><a href="/alerts">View all</a></div>
+        <div class="stack-list">
+            {% for alert in alerts %}
+            <a class="alert-row" href="/alerts?q={{ alert.threat }}">
+                <span class="badge {{ alert.severity|lower }}">{{ alert.severity }}</span>
+                <div><b>{{ alert.threat }}</b><small>{{ alert.username }} on {{ alert.source }} &middot; {{ alert.last_seen or alert.timestamp }}</small></div>
+            </a>
+            {% else %}
+            <p class="empty">No alerts detected.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-heading"><h2>Recent Logs</h2><a href="/logs">View all</a></div>
+        <div class="table-container compact">
+            <table>
+                <thead><tr><th>Time</th><th>Event</th><th>User</th><th>Severity</th></tr></thead>
+                <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.event_type }}</td>
+                    <td>{{ log.username }}</td>
+                    <td><span class="badge {{ log.severity|lower }}">{{ log.severity }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No logs collected yet.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+window.siemCharts = {
+    threatTrend: {{ threat_trend | tojson }},
+    monthlyThreatTrend: {{ monthly_threat_trend | tojson }},
+    severity: {{ severity_chart | tojson }},
+    topUsers: {{ top_users | tojson }},
+    topSources: {{ top_sources | tojson }},
+    events: {{ event_chart | tojson }},
+    login: {{ login_summary | tojson }}
+};
+window.dashboardState = {
+    lastAlertId: {{ alerts[0].id if alerts else 0 }},
+    seenCriticalIds: []
+};
+</script>
+
+{% endblock %}

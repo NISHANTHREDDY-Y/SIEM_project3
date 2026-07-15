@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block page_title %}IOC Scanner{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Indicator Scanner</h2>
+        <span>Paste IPs, domains, URLs, or hashes on separate lines</span>
+    </div>
+    <form method="post" class="auth-form" style="max-width: 900px; margin-top: 0;">
+        <label>
+            <span>Indicators</span>
+            <textarea name="ioc_input" rows="9" placeholder="8.8.8.8&#10;example.com&#10;https://example.com/login&#10;d41d8cd98f00b204e9800998ecf8427e">{{ raw_input }}</textarea>
+        </label>
+        <button type="submit">Scan Indicators</button>
+    </form>
+</section>
+
+{% if results %}
+<section class="metric-grid">
+    <article class="metric-card low"><span>Safe</span><strong>{{ summary.Safe }}</strong></article>
+    <article class="metric-card medium"><span>Suspicious</span><strong>{{ summary.Suspicious }}</strong></article>
+    <article class="metric-card danger"><span>Malicious</span><strong>{{ summary.Malicious }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Results</h2>
+        <span>{{ results|length }} indicators analyzed</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Indicator</th>
+                    <th>Type</th>
+                    <th>Verdict</th>
+                    <th>Confidence</th>
+                    <th>Reason</th>
+                    <th>Recommended Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in results %}
+                <tr>
+                    <td><b>{{ item.value }}</b></td>
+                    <td>{{ item.indicator_type }}</td>
+                    <td>
+                        <span class="badge {% if item.verdict == 'Malicious' %}critical{% elif item.verdict == 'Suspicious' %}medium{% else %}low{% endif %}">
+                            {{ item.verdict }}
+                        </span>
+                    </td>
+                    <td>{{ item.confidence }}%</td>
+                    <td>{{ item.reason }}</td>
+                    <td>{{ item.recommendation }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{% if not results %}
+<section class="panel">
+    <p class="muted-note">The scanner is ready. Paste indicators above to review them locally against format and risk heuristics.</p>
+</section>
+{% endif %}
+
+{% endblock %}

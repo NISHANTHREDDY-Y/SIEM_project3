@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block page_title %}Incidents{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Create Incident</h2>
+        <span>Correlated alerts can be grouped here for analyst handling.</span>
+    </div>
+    {% if can_manage %}
+    <form class="filter-bar" method="post">
+        <input name="title" placeholder="Incident title" value="Security Incident">
+        <select name="severity">
+            {% for level in ["LOW", "MEDIUM", "HIGH", "CRITICAL"] %}
+            <option value="{{ level }}">{{ level }}</option>
+            {% endfor %}
+        </select>
+        <select name="status">
+            {% for status in ["Open", "Investigating", "Resolved", "Closed"] %}
+            <option value="{{ status }}">{{ status }}</option>
+            {% endfor %}
+        </select>
+        <input name="assigned_analyst" placeholder="Assigned analyst">
+        <input name="linked_alert_ids" placeholder="Linked alert ids, comma separated">
+        <input name="correlation_key" placeholder="Optional correlation key">
+        <textarea name="description" rows="3" placeholder="Description" style="width:100%;min-height:84px;"></textarea>
+        <textarea name="notes" rows="3" placeholder="Notes" style="width:100%;min-height:84px;"></textarea>
+        <button type="submit">Create Incident</button>
+    </form>
+    {% else %}
+    <p class="empty">Viewer access is read-only.</p>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Open Incidents</h2>
+        <span>{{ incidents|length }} total</span>
+    </div>
+    <div class="alert-list">
+        {% for incident in incidents %}
+        <details class="alert-card">
+            <summary>
+                <span class="badge {{ incident.severity|lower }}">{{ incident.severity }}</span>
+                <b>#{{ incident.id }} {{ incident.title }}</b>
+                <span>Status: {{ incident.status }} · Analyst: {{ incident.assigned_analyst or "Unassigned" }}</span>
+                <small>Created {{ incident.created_at }} {% if incident.closed_at %}· Closed {{ incident.closed_at }}{% endif %} · Linked alerts {{ incident.linked_alert_ids }}</small>
+            </summary>
+            <div class="alert-detail">
+                <p>{{ incident.description }}</p>
+                <p><b>Notes:</b> {{ incident.notes or "None" }}</p>
+                {% if can_manage %}
+                <form class="filter-bar" method="post" action="/incidents/{{ incident.id }}/update">
+                    <select name="status">
+                        {% for status in ["Open", "Investigating", "Resolved", "Closed"] %}
+                        <option value="{{ status }}" {% if incident.status == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                    <input name="assigned_analyst" placeholder="Assigned analyst" value="{{ incident.assigned_analyst }}">
+                    <input name="description" placeholder="Description" value="{{ incident.description }}">
+                    <input name="notes" placeholder="Notes" value="{{ incident.notes }}">
+                    <button type="submit">Update</button>
+                </form>
+                {% endif %}
+            </div>
+        </details>
+        {% else %}
+        <p class="empty">No incidents yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Recent Alerts</h2>
+        <span>Use these ids when grouping alerts into an incident.</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>ID</th><th>Threat</th><th>Severity</th><th>User</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+            {% for alert in alerts %}
+            <tr>
+                <td>{{ alert.id }}</td>
+                <td>{{ alert.threat }}</td>
+                <td><span class="badge {{ alert.severity|lower }}">{{ alert.severity }}</span></td>
+                <td>{{ alert.username }}</td>
+                <td>{{ alert.source }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No alerts available.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

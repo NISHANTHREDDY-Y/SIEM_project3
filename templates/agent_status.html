@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block page_title %}Agent Status{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Connected Devices</span><strong>{{ totals.connected }}</strong></article>
+    <article class="metric-card"><span>Online Devices</span><strong>{{ totals.online }}</strong></article>
+    <article class="metric-card"><span>Offline Devices</span><strong>{{ totals.offline }}</strong></article>
+    <article class="metric-card"><span>Idle Devices</span><strong>{{ totals.idle }}</strong></article>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Collector Status</span><strong>{{ health.status }}</strong></article>
+    <article class="metric-card"><span>Heartbeat Status</span><strong>{{ "Healthy" if health.running else "Stopped" }}</strong></article>
+    <article class="metric-card"><span>Events / Min</span><strong>{{ "%.1f"|format(health.events_per_minute or 0) }}</strong></article>
+    <article class="metric-card"><span>Agent Interval</span><strong>{{ settings.agent_interval }}s</strong></article>
+    <article class="metric-card"><span>Heartbeat Interval</span><strong>{{ settings.heartbeat_interval }}s</strong></article>
+    <article class="metric-card"><span>Server Address</span><strong style="font-size:18px;">{{ settings.server_address }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Observed Devices</h2>
+        <span>Centralized multi-system inventory</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hostname</th>
+                    <th>Device ID</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                    <th>Heartbeat</th>
+                    <th>Logs / Alerts</th>
+                    <th>Risk Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td>{{ device.hostname }}</td>
+                    <td>{{ device.device_id }}</td>
+                    <td>{{ device.ip_address }}</td>
+                    <td><span class="badge {% if device.status == 'Online' %}low{% elif device.status == 'Idle' %}medium{% else %}info{% endif %}">{{ device.status }}</span></td>
+                    <td>{{ device.heartbeat or device.last_seen or '-' }}</td>
+                    <td>{{ device.log_count }} / {{ device.alert_count }}</td>
+                    <td>{{ device.risk_score }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">No connected agents yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIEM Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+    <main class="auth-shell">
+        <section class="auth-card">
+            <p class="eyebrow">Security Information & Event Management</p>
+            <h1>Sign in</h1>
+            <p class="auth-copy">Use your assigned SIEM account to access the dashboard.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-stack">
+                {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form method="post" class="auth-form">
+                <label>
+                    Username
+                    <input type="text" name="username" autocomplete="username" required>
+                </label>
+                <label>
+                    Password
+                    <input type="password" name="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit">Sign In</button>
+            </form>
+            <p class="auth-footnote">Demo accounts: admin, analyst, viewer.</p>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block page_title %}Sysmon Support{% endblock %}
+{% block content %}
+
+<section class="metric-grid">
+    <article class="metric-card"><span>Events</span><strong>{{ summary.total }}</strong></article>
+    <article class="metric-card low"><span>Process Create</span><strong>{{ summary.process_create }}</strong></article>
+    <article class="metric-card medium"><span>Network</span><strong>{{ summary.network }}</strong></article>
+    <article class="metric-card high"><span>Registry</span><strong>{{ summary.registry }}</strong></article>
+</section>
+
+<section class="metric-grid">
+    <article class="metric-card"><span>File Events</span><strong>{{ summary.file }}</strong></article>
+    <article class="metric-card"><span>DNS Queries</span><strong>{{ summary.dns }}</strong></article>
+    <article class="metric-card"><span>Source</span><strong>Sysmon</strong></article>
+    <article class="metric-card"><span>Status</span><strong>{{ "Ready" if monitored else "Waiting" }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Recent Sysmon Events</h2>
+        <span>Collected from the Microsoft-Windows-Sysmon/Operational channel when present</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Event Type</th>
+                    <th>Severity</th>
+                    <th>User</th>
+                    <th>Source</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.event_type }}</td>
+                    <td><span class="badge {% if log.severity == 'CRITICAL' %}critical{% elif log.severity == 'HIGH' %}high{% elif log.severity == 'MEDIUM' %}medium{% else %}low{% endif %}">{{ log.severity }}</span></td>
+                    <td>{{ log.username }}</td>
+                    <td>{{ log.source }}</td>
+                    <td><small>{{ log.message }}</small></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No Sysmon events collected yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

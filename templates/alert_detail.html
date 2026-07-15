@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block page_title %}Alert Detail{% endblock %}
+{% block content %}
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>{{ detail.alert.threat }}</h2>
+        <a class="button secondary" href="/alerts">Back to Alerts</a>
+    </div>
+    <div class="metric-grid">
+        <article class="metric-card"><span>Severity</span><strong>{{ detail.alert.severity }}</strong></article>
+        <article class="metric-card"><span>User</span><strong>{{ detail.alert.username }}</strong></article>
+        <article class="metric-card"><span>Hostname</span><strong>{{ detail.alert.hostname or detail.alert.computer or 'Unknown' }}</strong></article>
+        <article class="metric-card"><span>IP Address</span><strong>{{ detail.alert.ip_address or 'Unknown' }}</strong></article>
+        <article class="metric-card"><span>Email Status</span><strong>{{ "Sent" if detail.alert.email_sent else "Pending" }}</strong></article>
+    </div>
+</section>
+
+<section class="two-column">
+    <div class="panel">
+        <div class="panel-heading"><h2>Recommendation</h2></div>
+        <div class="detail-grid single">
+            <div><b>Description</b><span>{{ recommendation.description }}</span></div>
+            <div><b>Why It Happened</b><span>{{ recommendation.why }}</span></div>
+            <div><b>Immediate Action</b><span>{{ recommendation.immediate_action }}</span></div>
+            <div><b>Recommended Fix</b><span>{{ recommendation.recommended_fix }}</span></div>
+            <div><b>Long-term Defense</b><span>{{ recommendation.long_term_defense }}</span></div>
+            <div><b>MITRE ATT&CK</b><span>{{ recommendation.mitre }}</span></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-heading"><h2>Evidence</h2></div>
+        <p><b>Message:</b> {{ detail.alert.message }}</p>
+        <p><b>Source:</b> {{ detail.alert.source }}</p>
+        <p><b>Computer:</b> {{ detail.alert.computer or detail.alert.hostname or detail.alert.source }}</p>
+        <p><b>Event ID:</b> {{ detail.alert.event_id }}</p>
+        <p><b>Timestamp:</b> {{ detail.alert.timestamp }}</p>
+        <p><b>Last Seen:</b> {{ detail.alert.last_seen or detail.alert.timestamp }}</p>
+        <p><b>Count:</b> {{ detail.alert.count }}</p>
+        <p><b>Linked Recommendation:</b> {{ detail.alert.recommendation }}</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Timeline</h2>
+        <span>Chronological events tied to the same user, source, or event id</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>Time</th><th>Event</th><th>User</th><th>Source</th><th>Severity</th><th>Message</th></tr>
+            </thead>
+            <tbody>
+            {% for item in detail.timeline %}
+            <tr>
+                <td>{{ item.timestamp }}</td>
+                <td>{{ item.event_type }}</td>
+                <td>{{ item.username }}</td>
+                <td>{{ item.source }}</td>
+                <td><span class="badge {{ item.severity|lower }}">{{ item.severity }}</span></td>
+                <td>{{ item.message }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No related timeline events found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>Email History</h2>
+        <span>Delivery attempts tied to this alert</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr><th>Time</th><th>Recipient</th><th>Severity</th><th>Threat</th><th>Status</th><th>Error</th></tr>
+            </thead>
+            <tbody>
+            {% for mail in detail.email_history %}
+            <tr>
+                <td>{{ mail.timestamp }}</td>
+                <td>{{ mail.receiver }}</td>
+                <td><span class="badge {{ mail.severity|lower }}">{{ mail.severity }}</span></td>
+                <td>{{ mail.threat }}</td>
+                <td>{{ mail.status }}</td>
+                <td>{{ mail.error or "-" }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No email history for this alert.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}
